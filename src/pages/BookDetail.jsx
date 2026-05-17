@@ -14,6 +14,7 @@ import { getListing, conditionLabel } from '../lib/listings.js';
 import { getUserProfile } from '../lib/userProfile.js';
 import { formatPrice } from '../lib/money.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import Seo from '../components/Seo.jsx';
 
 export default function BookDetail() {
   const { id } = useParams();
@@ -55,6 +56,7 @@ export default function BookDetail() {
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center text-stone-500">
+        <Seo title="Loading book…" noIndex />
         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
         Loading…
       </div>
@@ -64,6 +66,7 @@ export default function BookDetail() {
   if (error || !listing) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+        <Seo title="Listing not found" description="This book may have been removed or sold." noIndex />
         <button
           onClick={() => navigate(-1)}
           className="inline-flex items-center gap-2 text-sm text-stone-600 hover:text-stone-900"
@@ -89,8 +92,25 @@ export default function BookDetail() {
   const isOwnListing = user?.uid === listing.sellerId;
   const isSold = listing.status === 'sold';
 
+  // Build a clean, human-readable description for search engines and link previews.
+  const sellerLine = seller?.location
+    ? ` Available in ${seller.location} for cash on delivery.`
+    : ' Cash on delivery.';
+  const baseDescription = listing.description?.trim();
+  const seoDescription = (
+    `${conditionLabel(listing.condition)} copy of "${listing.title}" by ${listing.author} for ${formatPrice(listing.price)}.${sellerLine}` +
+    (baseDescription ? ` ${baseDescription}` : '')
+  ).slice(0, 200);
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+      <Seo
+        title={`${listing.title} by ${listing.author}`}
+        description={seoDescription}
+        image={listing.imageUrl || undefined}
+        type="product"
+        noIndex={isSold}
+      />
       <button
         onClick={() => navigate(-1)}
         className="mb-6 inline-flex items-center gap-2 text-sm text-stone-600 hover:text-stone-900"

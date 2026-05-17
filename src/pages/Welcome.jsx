@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Search, Tag, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
+import Seo from '../components/Seo.jsx';
 
 export default function Welcome() {
   const { user, profile, loading, signInWithGoogle } = useAuth();
@@ -26,6 +27,10 @@ export default function Welcome() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-50 via-orange-50 to-amber-100">
+      <Seo
+        title="Buy and sell used books in your city"
+        description="KinKitab is a community marketplace for pre-loved books. Discover affordable reads near you or list your own — cash on delivery, no payment hassles."
+      />
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
         <div className="flex items-center gap-2">
           <BookOpen className="h-7 w-7 text-brand-600" />
