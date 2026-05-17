@@ -64,6 +64,7 @@ export async function createListing(user, data, image) {
     sellerName: data.sellerName || user.displayName || '',
     title: data.title.trim(),
     author: data.author.trim(),
+    isbn: (data.isbn || '').trim(),
     price: Number(data.price),
     condition: data.condition,
     description: data.description.trim(),
@@ -82,6 +83,7 @@ export async function updateListing(id, data, image) {
   const patch = {
     title: data.title.trim(),
     author: data.author.trim(),
+    isbn: (data.isbn || '').trim(),
     price: Number(data.price),
     condition: data.condition,
     description: data.description.trim(),

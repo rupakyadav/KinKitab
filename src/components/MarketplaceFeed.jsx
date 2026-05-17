@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Loader2, Search, SlidersHorizontal, X, BookOpen } from 'lucide-react';
+import { Loader2, Search, SlidersHorizontal, X, BookOpen, Barcode } from 'lucide-react';
 import { CONDITIONS, subscribeToAvailableListings } from '../lib/listings.js';
 import { getUserProfile } from '../lib/userProfile.js';
+import { looksLikeIsbnSearch, normalizeIsbn } from '../lib/isbn.js';
 import PublicBookCard from './PublicBookCard.jsx';
 
 const PRICE_RANGES = [
@@ -61,6 +62,9 @@ export default function MarketplaceFeed({ excludeSellerId, hideSold = true }) {
 
   // subscribeToAvailableListings already filters by status == 'available'
   // at the query level; the hideSold guard below is a safety net.
+  const isIsbnSearch = looksLikeIsbnSearch(search);
+  const normalizedIsbnSearch = isIsbnSearch ? normalizeIsbn(search) : '';
+
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     const range = PRICE_RANGES.find((r) => r.id === priceRange) || PRICE_RANGES[0];
@@ -71,13 +75,29 @@ export default function MarketplaceFeed({ excludeSellerId, hideSold = true }) {
       if (condition !== 'any' && l.condition !== condition) return false;
       const price = Number(l.price);
       if (price < range.min || price > range.max) return false;
+
       if (term) {
-        const haystack = `${l.title} ${l.author}`.toLowerCase();
-        if (!haystack.includes(term)) return false;
+        if (isIsbnSearch) {
+          // Strict ISBN match: only listings whose stored ISBN equals the
+          // normalized input pass through.
+          if (normalizeIsbn(l.isbn) !== normalizedIsbnSearch) return false;
+        } else {
+          const haystack = `${l.title} ${l.author}`.toLowerCase();
+          if (!haystack.includes(term)) return false;
+        }
       }
       return true;
     });
-  }, [allListings, search, condition, priceRange, excludeSellerId, hideSold]);
+  }, [
+    allListings,
+    search,
+    condition,
+    priceRange,
+    excludeSellerId,
+    hideSold,
+    isIsbnSearch,
+    normalizedIsbnSearch,
+  ]);
 
   const hasActiveFilters =
     search || condition !== 'any' || priceRange !== 'any';
@@ -101,7 +121,7 @@ export default function MarketplaceFeed({ excludeSellerId, hideSold = true }) {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by title or author…"
+              placeholder="Search by title, author, or ISBN…"
               className="w-full rounded-lg border border-stone-200 bg-white py-2.5 pl-10 pr-9 text-stone-900 placeholder-stone-400 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500 dark:focus:ring-brand-500/30"
             />
             {search && (
@@ -144,8 +164,19 @@ export default function MarketplaceFeed({ excludeSellerId, hideSold = true }) {
 
         {hasActiveFilters && (
           <div className="mt-3 flex items-center gap-2 text-xs text-stone-500 dark:text-slate-400">
-            <SlidersHorizontal className="h-3.5 w-3.5" />
-            <span>Filters active</span>
+            {isIsbnSearch ? (
+              <>
+                <Barcode className="h-3.5 w-3.5" />
+                <span>
+                  ISBN match · {normalizedIsbnSearch}
+                </span>
+              </>
+            ) : (
+              <>
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                <span>Filters active</span>
+              </>
+            )}
             <button
               onClick={clearFilters}
               className="ml-auto rounded-md px-2 py-1 text-xs font-medium text-brand-700 hover:bg-brand-50 dark:text-brand-400 dark:hover:bg-brand-500/10"
@@ -168,7 +199,12 @@ export default function MarketplaceFeed({ excludeSellerId, hideSold = true }) {
             {error}
           </div>
         ) : filtered.length === 0 ? (
-          <EmptyState hasActiveFilters={hasActiveFilters} onClear={clearFilters} />
+          <EmptyState
+            hasActiveFilters={hasActiveFilters}
+            isIsbnSearch={isIsbnSearch}
+            isbnValue={normalizedIsbnSearch}
+            onClear={clearFilters}
+          />
         ) : (
           <>
             <div className="mb-3 text-sm text-stone-500 dark:text-slate-400">
@@ -190,25 +226,35 @@ export default function MarketplaceFeed({ excludeSellerId, hideSold = true }) {
   );
 }
 
-function EmptyState({ hasActiveFilters, onClear }) {
+function EmptyState({ hasActiveFilters, isIsbnSearch, isbnValue, onClear }) {
+  const title = isIsbnSearch
+    ? 'No copies of this ISBN are listed yet'
+    : hasActiveFilters
+      ? 'No books found matching your search'
+      : 'The shelves are empty';
+
+  const body = isIsbnSearch
+    ? `Nobody has listed ISBN ${isbnValue} for sale right now. Try a title or author search instead.`
+    : hasActiveFilters
+      ? 'Try a different keyword or loosen your filters to discover more reads.'
+      : 'No one has listed a book yet. Be the first — it only takes a minute.';
+
   return (
     <div className="rounded-2xl border border-dashed border-stone-300 bg-white p-12 text-center dark:border-slate-700 dark:bg-slate-900">
       <div className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-stone-100 text-stone-500 dark:bg-slate-800 dark:text-slate-400">
-        {hasActiveFilters ? (
+        {isIsbnSearch ? (
+          <Barcode className="h-7 w-7" />
+        ) : hasActiveFilters ? (
           <Search className="h-7 w-7" />
         ) : (
           <BookOpen className="h-7 w-7" />
         )}
       </div>
       <h3 className="mt-4 text-lg font-semibold text-stone-900 dark:text-slate-100">
-        {hasActiveFilters
-          ? 'No books found matching your search'
-          : 'The shelves are empty'}
+        {title}
       </h3>
       <p className="mx-auto mt-1 max-w-sm text-sm text-stone-500 dark:text-slate-400">
-        {hasActiveFilters
-          ? 'Try a different keyword or loosen your filters to discover more reads.'
-          : 'No one has listed a book yet. Be the first — it only takes a minute.'}
+        {body}
       </p>
       {hasActiveFilters && (
         <button
