@@ -8,7 +8,7 @@ import Navbar from './Navbar.jsx';
  */
 export default function AppLayout() {
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-slate-950 dark:text-slate-100">
       <Navbar />
       <main>
         <Outlet />

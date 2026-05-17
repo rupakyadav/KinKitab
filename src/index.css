@@ -10,3 +10,7 @@ body {
   font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+
+html.dark {
+  color-scheme: dark;
+}

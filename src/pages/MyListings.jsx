@@ -31,10 +31,9 @@ export default function MyListings() {
   const [pendingDelete, setPendingDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  const [pendingStatus, setPendingStatus] = useState(null); // { listing, nextStatus }
+  const [pendingStatus, setPendingStatus] = useState(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
-  // Real-time subscription to this user's listings.
   useEffect(() => {
     if (!user) return;
     setLoading(true);
@@ -120,8 +119,10 @@ export default function MyListings() {
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900 sm:text-3xl">My Listings</h1>
-          <p className="mt-1 text-stone-600">
+          <h1 className="text-2xl font-bold text-stone-900 dark:text-slate-100 sm:text-3xl">
+            My Listings
+          </h1>
+          <p className="mt-1 text-stone-600 dark:text-slate-300">
             Manage the books you've put up for sale.
           </p>
         </div>
@@ -134,7 +135,6 @@ export default function MyListings() {
         </button>
       </header>
 
-      {/* Status filter pills (only show when there are listings) */}
       {!loading && listings.length > 0 && (
         <div className="mt-6 flex flex-wrap gap-2">
           {STATUS_FILTERS.map((f) => {
@@ -145,14 +145,16 @@ export default function MyListings() {
                 onClick={() => setStatusFilter(f.id)}
                 className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${
                   active
-                    ? 'border-brand-200 bg-brand-50 text-brand-700'
-                    : 'border-stone-200 bg-white text-stone-600 hover:bg-stone-50'
+                    ? 'border-brand-200 bg-brand-50 text-brand-700 dark:border-brand-500/40 dark:bg-brand-500/10 dark:text-brand-400'
+                    : 'border-stone-200 bg-white text-stone-600 hover:bg-stone-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
                 }`}
               >
                 {f.label}
                 <span
                   className={`rounded-full px-1.5 text-xs ${
-                    active ? 'bg-brand-100 text-brand-700' : 'bg-stone-100 text-stone-600'
+                    active
+                      ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-300'
+                      : 'bg-stone-100 text-stone-600 dark:bg-slate-800 dark:text-slate-300'
                   }`}
                 >
                   {counts[f.id]}
@@ -165,12 +167,12 @@ export default function MyListings() {
 
       <div className="mt-6">
         {loading ? (
-          <div className="flex items-center justify-center py-20 text-stone-500">
+          <div className="flex items-center justify-center py-20 text-stone-500 dark:text-slate-400">
             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
             Loading your listings…
           </div>
         ) : loadError ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
             {loadError}
           </div>
         ) : listings.length === 0 ? (
@@ -244,14 +246,14 @@ export default function MyListings() {
 
 function FirstListingEmptyState({ onCreate }) {
   return (
-    <div className="rounded-2xl border border-dashed border-stone-300 bg-white p-10 text-center">
-      <div className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-700">
+    <div className="rounded-2xl border border-dashed border-stone-300 bg-white p-10 text-center dark:border-slate-700 dark:bg-slate-900">
+      <div className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400">
         <BookOpen className="h-7 w-7" />
       </div>
-      <h2 className="mt-4 text-lg font-semibold text-stone-900">
+      <h2 className="mt-4 text-lg font-semibold text-stone-900 dark:text-slate-100">
         You haven't listed any books yet
       </h2>
-      <p className="mx-auto mt-1 max-w-sm text-sm text-stone-500">
+      <p className="mx-auto mt-1 max-w-sm text-sm text-stone-500 dark:text-slate-400">
         Got a book gathering dust? Snap a photo, set a price, and find it a new
         home in minutes.
       </p>
@@ -279,15 +281,15 @@ function FilteredEmptyState({ statusFilter, onShowAll }) {
         };
 
   return (
-    <div className="rounded-2xl border border-dashed border-stone-300 bg-white p-10 text-center">
-      <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-xl bg-stone-100 text-stone-500">
+    <div className="rounded-2xl border border-dashed border-stone-300 bg-white p-10 text-center dark:border-slate-700 dark:bg-slate-900">
+      <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-xl bg-stone-100 text-stone-500 dark:bg-slate-800 dark:text-slate-400">
         <Sparkles className="h-6 w-6" />
       </div>
-      <h2 className="mt-4 font-semibold text-stone-900">{copy.title}</h2>
-      <p className="mx-auto mt-1 max-w-sm text-sm text-stone-500">{copy.body}</p>
+      <h2 className="mt-4 font-semibold text-stone-900 dark:text-slate-100">{copy.title}</h2>
+      <p className="mx-auto mt-1 max-w-sm text-sm text-stone-500 dark:text-slate-400">{copy.body}</p>
       <button
         onClick={onShowAll}
-        className="mt-5 inline-flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+        className="mt-5 inline-flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
       >
         Show all listings
       </button>

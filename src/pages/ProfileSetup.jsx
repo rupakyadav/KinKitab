@@ -65,10 +65,10 @@ export default function ProfileSetup() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-12">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-stone-900 sm:text-3xl">
+        <h1 className="text-2xl font-bold text-stone-900 dark:text-slate-100 sm:text-3xl">
           {isExisting ? 'Edit your profile' : 'Set up your profile'}
         </h1>
-        <p className="mt-1 text-stone-600">
+        <p className="mt-1 text-stone-600 dark:text-slate-300">
           {isExisting
             ? 'Update your contact details and location.'
             : 'A few details so buyers and sellers can reach you.'}
@@ -77,21 +77,23 @@ export default function ProfileSetup() {
 
       <form
         onSubmit={handleSubmit}
-        className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm sm:p-8"
+        className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8"
       >
         {/* Identity (read-only) */}
-        <div className="mb-6 flex items-center gap-4 rounded-xl bg-stone-50 p-4">
+        <div className="mb-6 flex items-center gap-4 rounded-xl bg-stone-50 p-4 dark:bg-slate-800/60">
           {user?.photoURL && (
             <img
               src={user.photoURL}
               alt={user.displayName || 'You'}
-              className="h-14 w-14 rounded-full ring-2 ring-brand-100"
+              className="h-14 w-14 rounded-full ring-2 ring-brand-100 dark:ring-brand-500/30"
               referrerPolicy="no-referrer"
             />
           )}
           <div className="min-w-0">
-            <p className="truncate font-semibold text-stone-900">{user?.displayName}</p>
-            <p className="flex items-center gap-1 truncate text-sm text-stone-500">
+            <p className="truncate font-semibold text-stone-900 dark:text-slate-100">
+              {user?.displayName}
+            </p>
+            <p className="flex items-center gap-1 truncate text-sm text-stone-500 dark:text-slate-400">
               <Mail className="h-3.5 w-3.5" />
               {user?.email}
             </p>
@@ -131,7 +133,7 @@ export default function ProfileSetup() {
         </div>
 
         {error && (
-          <div className="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <div className="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
             {error}
           </div>
         )}
@@ -141,7 +143,7 @@ export default function ProfileSetup() {
             <button
               type="button"
               onClick={() => navigate('/dashboard')}
-              className="rounded-lg border border-stone-200 bg-white px-4 py-2.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
+              className="rounded-lg border border-stone-200 bg-white px-4 py-2.5 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
             >
               Cancel
             </button>
@@ -163,23 +165,26 @@ export default function ProfileSetup() {
 function Field({ id, label, icon: Icon, hint, ...inputProps }) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-stone-800">
+      <label
+        htmlFor={id}
+        className="mb-1.5 block text-sm font-medium text-stone-800 dark:text-slate-200"
+      >
         {label}
-        {inputProps.required && <span className="ml-0.5 text-brand-600">*</span>}
+        {inputProps.required && <span className="ml-0.5 text-brand-600 dark:text-brand-400">*</span>}
       </label>
       <div className="relative">
         {Icon && (
-          <Icon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+          <Icon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400 dark:text-slate-500" />
         )}
         <input
           id={id}
           {...inputProps}
           className={`w-full rounded-lg border border-stone-200 bg-white py-2.5 ${
             Icon ? 'pl-10' : 'pl-3'
-          } pr-3 text-stone-900 placeholder-stone-400 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100`}
+          } pr-3 text-stone-900 placeholder-stone-400 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500 dark:focus:border-brand-500 dark:focus:ring-brand-500/30`}
         />
       </div>
-      {hint && <p className="mt-1.5 text-xs text-stone-500">{hint}</p>}
+      {hint && <p className="mt-1.5 text-xs text-stone-500 dark:text-slate-400">{hint}</p>}
     </div>
   );
 }

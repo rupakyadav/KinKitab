@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { BookOpen, Search, Tag, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import Seo from '../components/Seo.jsx';
+import ThemeToggle from '../components/ThemeToggle.jsx';
 
 export default function Welcome() {
   const { user, profile, loading, signInWithGoogle } = useAuth();
@@ -26,34 +27,37 @@ export default function Welcome() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-50 via-orange-50 to-amber-100">
+    <div className="min-h-screen bg-gradient-to-br from-stone-50 via-orange-50 to-amber-100 text-stone-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-slate-100">
       <Seo
         title="Buy and sell used books in your city"
         description="KinKitab is a community marketplace for pre-loved books. Discover affordable reads near you or list your own — cash on delivery, no payment hassles."
       />
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
         <div className="flex items-center gap-2">
-          <BookOpen className="h-7 w-7 text-brand-600" />
-          <span className="text-xl font-bold tracking-tight text-stone-900">
+          <BookOpen className="h-7 w-7 text-brand-600 dark:text-brand-500" />
+          <span className="text-xl font-bold tracking-tight text-stone-900 dark:text-slate-100">
             KinKitab
           </span>
         </div>
-        <button
-          onClick={handleSignIn}
-          className="rounded-lg px-4 py-2 text-sm font-medium text-stone-700 hover:bg-white/60"
-        >
-          Sign in
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <button
+            onClick={handleSignIn}
+            className="rounded-lg px-4 py-2 text-sm font-medium text-stone-700 hover:bg-white/60 dark:text-slate-200 dark:hover:bg-slate-800/60"
+          >
+            Sign in
+          </button>
+        </div>
       </header>
 
       <main className="mx-auto max-w-6xl px-6 pt-12 pb-20 md:pt-20">
         <section className="grid items-center gap-12 md:grid-cols-2">
           <div>
-            <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-stone-900 md:text-5xl">
+            <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-stone-900 dark:text-slate-100 md:text-5xl">
               A second life for{' '}
-              <span className="text-brand-600">every book.</span>
+              <span className="text-brand-600 dark:text-brand-400">every book.</span>
             </h1>
-            <p className="mt-5 text-lg text-stone-600">
+            <p className="mt-5 text-lg text-stone-600 dark:text-slate-300">
               Buy and sell pre-loved books in your city. List in minutes,
               discover in seconds, pay on delivery.
             </p>
@@ -61,12 +65,12 @@ export default function Welcome() {
             <div className="mt-8">
               <button
                 onClick={handleSignIn}
-                className="inline-flex items-center gap-3 rounded-xl border border-stone-200 bg-white px-5 py-3 text-stone-800 shadow-sm transition hover:shadow-md"
+                className="inline-flex items-center gap-3 rounded-xl border border-stone-200 bg-white px-5 py-3 text-stone-800 shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
               >
                 <GoogleLogo />
                 <span className="font-medium">Sign in with Google</span>
               </button>
-              <p className="mt-3 text-xs text-stone-500">
+              <p className="mt-3 text-xs text-stone-500 dark:text-slate-400">
                 We use Google to keep things safe and password-free.
               </p>
             </div>
@@ -97,8 +101,8 @@ export default function Welcome() {
         </section>
       </main>
 
-      <footer className="border-t border-stone-200/70 bg-white/50">
-        <div className="mx-auto max-w-6xl px-6 py-6 text-sm text-stone-500">
+      <footer className="border-t border-stone-200/70 bg-white/50 dark:border-slate-800/70 dark:bg-slate-900/40">
+        <div className="mx-auto max-w-6xl px-6 py-6 text-sm text-stone-500 dark:text-slate-400">
           © {new Date().getFullYear()} KinKitab — built with care.
         </div>
       </footer>
@@ -108,12 +112,12 @@ export default function Welcome() {
 
 function FeatureCard({ icon, title, body }) {
   return (
-    <div className="rounded-xl border border-stone-200 bg-white/80 p-5 shadow-sm backdrop-blur">
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+    <div className="rounded-xl border border-stone-200 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-slate-700/70 dark:bg-slate-900/60">
+      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
         {icon}
       </div>
-      <h3 className="mt-3 font-semibold text-stone-900">{title}</h3>
-      <p className="mt-1 text-sm text-stone-600">{body}</p>
+      <h3 className="mt-3 font-semibold text-stone-900 dark:text-slate-100">{title}</h3>
+      <p className="mt-1 text-sm text-stone-600 dark:text-slate-300">{body}</p>
     </div>
   );
 }
