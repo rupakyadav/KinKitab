@@ -5,6 +5,7 @@ import {
   BookOpen,
   Mail,
   MapPin,
+  MessageSquare,
   Phone,
   Loader2,
   ShieldCheck,
@@ -14,6 +15,7 @@ import { getListing, conditionLabel } from '../lib/listings.js';
 import { getUserProfile } from '../lib/userProfile.js';
 import { formatPrice } from '../lib/money.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { getOrCreateChatForListing } from '../lib/chat.js';
 import Seo from '../components/Seo.jsx';
 
 export default function BookDetail() {
@@ -216,6 +218,9 @@ export default function BookDetail() {
               isSold={isSold}
               isAuthed={Boolean(user)}
               seller={seller}
+              listing={listing}
+              user={user}
+              navigate={navigate}
             />
           </div>
         </div>
@@ -224,7 +229,7 @@ export default function BookDetail() {
   );
 }
 
-function ContactSection({ isOwnListing, isSold, isAuthed, seller }) {
+function ContactSection({ isOwnListing, isSold, isAuthed, seller, listing, user, navigate }) {
   if (isOwnListing) {
     return (
       <div className="mt-5 rounded-lg border border-stone-200 bg-stone-50 p-4 text-sm text-stone-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300">
@@ -261,7 +266,9 @@ function ContactSection({ isOwnListing, isSold, isAuthed, seller }) {
 
   return (
     <div className="mt-5 border-t border-stone-100 pt-4 dark:border-slate-800">
-      <h3 className="flex items-center gap-2 text-sm font-semibold text-stone-900 dark:text-slate-100">
+      <ChatWithSellerButton listing={listing} user={user} navigate={navigate} />
+
+      <h3 className="mt-5 flex items-center gap-2 text-sm font-semibold text-stone-900 dark:text-slate-100">
         <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
         Contact for Cash on Delivery
       </h3>
@@ -292,6 +299,43 @@ function ContactSection({ isOwnListing, isSold, isAuthed, seller }) {
           />
         )}
       </div>
+    </div>
+  );
+}
+
+function ChatWithSellerButton({ listing, user, navigate }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  const start = async () => {
+    setBusy(true);
+    setError('');
+    try {
+      const chat = await getOrCreateChatForListing(listing, user);
+      navigate(`/inbox/${chat.id}`);
+    } catch (err) {
+      console.error('Could not start chat:', err);
+      setError(err?.message || 'Could not open chat. Try again.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div>
+      <button
+        onClick={start}
+        disabled={busy}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
+        {busy ? 'Opening chat…' : 'Chat with Seller'}
+      </button>
+      {error && (
+        <div className="mt-2 rounded-lg border border-red-200 bg-red-50 p-2.5 text-xs text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
+          {error}
+        </div>
+      )}
     </div>
   );
 }

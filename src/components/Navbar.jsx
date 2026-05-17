@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { BookOpen, LayoutDashboard, ListChecks, LogOut, Menu, User, X } from 'lucide-react';
+import { BookOpen, LayoutDashboard, ListChecks, LogOut, Menu, MessageSquare, User, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import ThemeToggle from './ThemeToggle.jsx';
 
 const links = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/my-listings', label: 'My Listings', icon: ListChecks },
+  { to: '/inbox', label: 'Inbox', icon: MessageSquare },
   { to: '/profile-setup', label: 'Profile', icon: User },
 ];
 

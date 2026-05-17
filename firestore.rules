@@ -29,5 +29,50 @@ service cloud.firestore {
       allow delete: if request.auth != null
         && resource.data.sellerId == request.auth.uid;
     }
+
+    // Chats: only the two participants can read or write.
+    match /chats/{chatId} {
+      allow read: if request.auth != null
+        && request.auth.uid in resource.data.participants;
+
+      // On create, require the deterministic id, the caller as buyer,
+      // and a participants array containing both parties.
+      allow create: if request.auth != null
+        && request.resource.data.buyerId == request.auth.uid
+        && request.resource.data.sellerId is string
+        && request.resource.data.sellerId != request.auth.uid
+        && request.resource.data.bookId is string
+        && chatId == request.resource.data.bookId + '_' + request.resource.data.buyerId
+        && request.resource.data.participants.size() == 2
+        && request.auth.uid in request.resource.data.participants
+        && request.resource.data.sellerId in request.resource.data.participants;
+
+      // Updates are only the denormalized "last message" fields, written by
+      // the sender as part of sending a message.
+      allow update: if request.auth != null
+        && request.auth.uid in resource.data.participants
+        && request.resource.data.buyerId == resource.data.buyerId
+        && request.resource.data.sellerId == resource.data.sellerId
+        && request.resource.data.bookId == resource.data.bookId
+        && request.resource.data.participants == resource.data.participants;
+
+      allow delete: if false;
+
+      // Messages live under the chat. A user can only post as themselves,
+      // and only if they're a participant of the parent chat.
+      match /messages/{messageId} {
+        allow read: if request.auth != null
+          && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+
+        allow create: if request.auth != null
+          && request.resource.data.senderId == request.auth.uid
+          && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 2000;
+
+        allow update, delete: if false;
+      }
+    }
   }
 }
