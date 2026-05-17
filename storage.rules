@@ -1,0 +1,21 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Listing images live under listings/{uid}/...
+    // Anyone can view (so we can show them on the marketplace),
+    // only the owning user can upload / overwrite / delete.
+    match /listings/{uid}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.auth.uid == uid
+        && (
+          // Allow delete (no resource on incoming request)
+          request.resource == null ||
+          // Or an upload that is an image under 5 MB
+          (request.resource.size < 5 * 1024 * 1024
+            && request.resource.contentType.matches('image/.*'))
+        );
+    }
+  }
+}
