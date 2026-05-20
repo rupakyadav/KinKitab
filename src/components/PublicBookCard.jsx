@@ -1,15 +1,24 @@
 import { Link } from 'react-router-dom';
-import { BookOpen, MapPin } from 'lucide-react';
+import { BookOpen, MapPin, Heart } from 'lucide-react';
 import { conditionLabel } from '../lib/listings.js';
+import { useFavorites } from '../context/FavoritesContext.jsx';
 import { formatPrice } from '../lib/money.js';
 
 export default function PublicBookCard({ listing, sellerLocation }) {
   const isSold = listing.status === 'sold';
+  const { isFavorite, toggle } = useFavorites();
+  const liked = isFavorite(listing.id);
+
+  const handleFavorite = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggle(listing.id);
+  };
 
   return (
     <Link
       to={`/book/${listing.id}`}
-      className={`group flex flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 ${
+      className={`group relative flex flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 ${
         isSold ? 'opacity-75' : ''
       }`}
     >
@@ -36,6 +45,20 @@ export default function PublicBookCard({ listing, sellerLocation }) {
         <span className="absolute right-3 top-3 rounded-md bg-white/95 px-2 py-0.5 text-xs font-medium text-stone-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">
           {conditionLabel(listing.condition)}
         </span>
+
+        {!isSold && (
+          <button
+            onClick={handleFavorite}
+            className={`absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-full shadow-sm transition-all ${
+              liked
+                ? 'bg-red-50 text-red-500 opacity-100 dark:bg-red-500/20'
+                : 'bg-white/90 text-stone-400 opacity-0 group-hover:opacity-100 dark:bg-slate-900/80'
+            } hover:scale-110`}
+            aria-label={liked ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            <Heart className={`h-4 w-4 ${liked ? 'fill-current' : ''}`} />
+          </button>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col p-4">

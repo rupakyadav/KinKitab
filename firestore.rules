@@ -36,6 +36,11 @@ service cloud.firestore {
         && (request.resource.data.createdAt == resource.data.createdAt || !('createdAt' in resource.data));
 
       allow delete: if false;
+
+      // Favorites: only the user can manage their own favorites list.
+      match /favorites/{bookId} {
+        allow read, write: if isOwner(uid);
+      }
     }
 
     // Listings: anyone can browse; only the seller can create / edit / delete their own.

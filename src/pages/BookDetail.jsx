@@ -10,6 +10,8 @@ import {
   Loader2,
   ShieldCheck,
   User as UserIcon,
+  Heart,
+  Share2,
 } from 'lucide-react';
 import { getListing, conditionLabel } from '../lib/listings.js';
 import { getUserProfile } from '../lib/userProfile.js';
@@ -18,11 +20,14 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { getOrCreateChatForListing } from '../lib/chat.js';
 import Seo from '../components/Seo.jsx';
 import { BookDetailSkeleton } from '../components/Skeleton.jsx';
+import { useFavorites } from '../context/FavoritesContext.jsx';
 
 export default function BookDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isFavorite, toggle } = useFavorites();
+  const liked = isFavorite(id);
 
   const [listing, setListing] = useState(null);
   const [seller, setSeller] = useState(null);
@@ -162,9 +167,45 @@ export default function BookDetail() {
                 </span>
               )}
             </div>
-            <h1 className="mt-3 text-2xl font-bold tracking-tight text-stone-900 dark:text-slate-100 sm:text-3xl">
-              {listing.title}
-            </h1>
+            <div className="mt-3 flex items-start justify-between gap-4">
+              <h1 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-slate-100 sm:text-3xl">
+                {listing.title}
+              </h1>
+              <div className="flex shrink-0 gap-2">
+                <button
+                  onClick={() => {
+                    const url = window.location.href;
+                    if (navigator.share) {
+                      navigator.share({
+                        title: listing.title,
+                        text: `Check out "${listing.title}" on KinKitab!`,
+                        url,
+                      });
+                    } else {
+                      navigator.clipboard.writeText(url);
+                      alert('Link copied to clipboard!');
+                    }
+                  }}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 transition hover:border-stone-300 hover:text-stone-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-slate-200"
+                  title="Share"
+                >
+                  <Share2 className="h-5 w-5" />
+                </button>
+                {!isOwnListing && !isSold && (
+                  <button
+                    onClick={() => toggle(listing.id)}
+                    className={`flex h-10 w-10 items-center justify-center rounded-full border transition ${
+                      liked
+                        ? 'border-red-100 bg-red-50 text-red-500 dark:border-red-500/20 dark:bg-red-500/10'
+                        : 'border-stone-200 bg-white text-stone-500 hover:border-stone-300 hover:text-stone-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-slate-200'
+                    }`}
+                    title={liked ? 'Remove from favorites' : 'Save for later'}
+                  >
+                    <Heart className={`h-5 w-5 ${liked ? 'fill-current' : ''}`} />
+                  </button>
+                )}
+              </div>
+            </div>
             <p className="mt-1 text-stone-600 dark:text-slate-300">by {listing.author}</p>
             <p className="mt-4 text-3xl font-extrabold text-stone-900 dark:text-slate-100">
               {formatPrice(listing.price)}
