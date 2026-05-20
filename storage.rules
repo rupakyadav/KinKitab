@@ -17,5 +17,10 @@ service firebase.storage {
             && request.resource.contentType.matches('image/.*'))
         );
     }
+
+    // Deny all other access by default
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
   }
 }
