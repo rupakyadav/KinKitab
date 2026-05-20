@@ -2,42 +2,84 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // User profiles: world-readable, writable only by the owner.
+    // Helper: is the user authenticated?
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Helper: does the user own this document?
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // User profiles: authenticated users can read; only the owner can write.
     match /users/{uid} {
-      allow read: if true;
-      allow create, update: if request.auth != null && request.auth.uid == uid;
+      // Profiles are only readable by signed-in users to prevent scraping of PII.
+      allow read: if isSignedIn();
+
+      allow create: if isOwner(uid)
+        && request.resource.data.username is string
+        && request.resource.data.username.size() >= 2
+        && request.resource.data.location is string
+        && request.resource.data.location.size() >= 2
+        && (request.resource.data.phone == "" || request.resource.data.phone is string)
+        && request.resource.data.email == request.auth.token.email;
+
+      allow update: if isOwner(uid)
+        && request.resource.data.username is string
+        && request.resource.data.username.size() >= 2
+        && request.resource.data.location is string
+        && request.resource.data.location.size() >= 2
+        && (request.resource.data.phone == "" || request.resource.data.phone is string)
+        // Ensure immutable fields
+        && request.resource.data.email == resource.data.email
+        && (request.resource.data.createdAt == resource.data.createdAt || !('createdAt' in resource.data));
+
       allow delete: if false;
+
+      // Favorites: only the user can manage their own favorites list.
+      match /favorites/{bookId} {
+        allow read, write: if isOwner(uid);
+      }
     }
 
     // Listings: anyone can browse; only the seller can create / edit / delete their own.
     match /listings/{listingId} {
       allow read: if true;
 
-      allow create: if request.auth != null
+      allow create: if isSignedIn()
         && request.resource.data.sellerId == request.auth.uid
         && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
         && request.resource.data.author is string
+        && request.resource.data.author.size() > 0
         && request.resource.data.price is number
         && request.resource.data.price >= 0
         && request.resource.data.condition in ['new', 'like_new', 'used', 'well_loved']
         && request.resource.data.status == 'available';
 
-      allow update: if request.auth != null
+      allow update: if isSignedIn()
         && resource.data.sellerId == request.auth.uid
-        && request.resource.data.sellerId == resource.data.sellerId;
+        && request.resource.data.sellerId == resource.data.sellerId
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.author is string
+        && request.resource.data.author.size() > 0
+        && request.resource.data.price is number
+        && request.resource.data.price >= 0
+        && request.resource.data.condition in ['new', 'like_new', 'used', 'well_loved']
+        && request.resource.data.status in ['available', 'sold'];
 
-      allow delete: if request.auth != null
+      allow delete: if isSignedIn()
         && resource.data.sellerId == request.auth.uid;
     }
 
     // Chats: only the two participants can read or write.
     match /chats/{chatId} {
-      allow read: if request.auth != null
+      allow read: if isSignedIn()
         && request.auth.uid in resource.data.participants;
 
-      // On create, require the deterministic id, the caller as buyer,
-      // and a participants array containing both parties.
-      allow create: if request.auth != null
+      allow create: if isSignedIn()
         && request.resource.data.buyerId == request.auth.uid
         && request.resource.data.sellerId is string
         && request.resource.data.sellerId != request.auth.uid
@@ -47,24 +89,23 @@ service cloud.firestore {
         && request.auth.uid in request.resource.data.participants
         && request.resource.data.sellerId in request.resource.data.participants;
 
-      // Updates are only the denormalized "last message" fields, written by
-      // the sender as part of sending a message.
-      allow update: if request.auth != null
+      allow update: if isSignedIn()
         && request.auth.uid in resource.data.participants
+        // Ensure immutable fields
         && request.resource.data.buyerId == resource.data.buyerId
         && request.resource.data.sellerId == resource.data.sellerId
         && request.resource.data.bookId == resource.data.bookId
-        && request.resource.data.participants == resource.data.participants;
+        && request.resource.data.participants == resource.data.participants
+        // Only allow updating last message fields if the caller is the sender
+        && request.resource.data.lastMessageSenderId == request.auth.uid;
 
       allow delete: if false;
 
-      // Messages live under the chat. A user can only post as themselves,
-      // and only if they're a participant of the parent chat.
       match /messages/{messageId} {
-        allow read: if request.auth != null
+        allow read: if isSignedIn()
           && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
 
-        allow create: if request.auth != null
+        allow create: if isSignedIn()
           && request.resource.data.senderId == request.auth.uid
           && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants
           && request.resource.data.text is string

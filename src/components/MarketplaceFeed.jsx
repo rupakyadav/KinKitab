@@ -4,6 +4,7 @@ import { CONDITIONS, subscribeToAvailableListings } from '../lib/listings.js';
 import { getUserProfile } from '../lib/userProfile.js';
 import { looksLikeIsbnSearch, normalizeIsbn } from '../lib/isbn.js';
 import PublicBookCard from './PublicBookCard.jsx';
+import { BookCardSkeleton } from './Skeleton.jsx';
 
 const PRICE_RANGES = [
   { id: 'any', label: 'Any price', min: 0, max: Infinity },
@@ -190,9 +191,10 @@ export default function MarketplaceFeed({ excludeSellerId, hideSold = true }) {
       {/* Results */}
       <div className="mt-6">
         {loading ? (
-          <div className="flex items-center justify-center py-16 text-stone-500 dark:text-slate-400">
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            Loading the marketplace…
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[...Array(8)].map((_, i) => (
+              <BookCardSkeleton key={i} />
+            ))}
           </div>
         ) : error ? (
           <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
