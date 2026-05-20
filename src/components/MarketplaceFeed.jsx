@@ -39,7 +39,7 @@ export default function MarketplaceFeed({ excludeSellerId, hideSold = true }) {
   const [sellerProfiles, setSellerProfiles] = useState({});
   useEffect(() => {
     const uniqueIds = [...new Set(allListings.map((l) => l.sellerId))];
-    const missing = uniqueIds.filter((id) => !sellerProfiles[id]);
+    const missing = uniqueIds.filter((id) => !(id in sellerProfiles));
     if (missing.length === 0) return;
 
     let cancelled = false;
