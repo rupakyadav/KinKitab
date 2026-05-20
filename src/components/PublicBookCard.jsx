@@ -1,9 +1,10 @@
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, MapPin } from 'lucide-react';
 import { conditionLabel } from '../lib/listings.js';
 import { formatPrice } from '../lib/money.js';
 
-export default function PublicBookCard({ listing, sellerLocation }) {
+function PublicBookCard({ listing, sellerLocation }) {
   const isSold = listing.status === 'sold';
 
   return (
@@ -61,3 +62,5 @@ export default function PublicBookCard({ listing, sellerLocation }) {
     </Link>
   );
 }
+
+export default memo(PublicBookCard);

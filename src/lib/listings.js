@@ -4,6 +4,7 @@ import {
   deleteDoc,
   doc,
   getDoc,
+  limit,
   onSnapshot,
   orderBy,
   query,
@@ -145,7 +146,8 @@ export function subscribeToAvailableListings(onChange, onError) {
   const q = query(
     listingsCol,
     where('status', '==', 'available'),
-    orderBy('createdAt', 'desc')
+    orderBy('createdAt', 'desc'),
+    limit(50)
   );
   return onSnapshot(
     q,
