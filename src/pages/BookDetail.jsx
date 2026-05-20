@@ -17,6 +17,7 @@ import { formatPrice } from '../lib/money.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { getOrCreateChatForListing } from '../lib/chat.js';
 import Seo from '../components/Seo.jsx';
+import { BookDetailSkeleton } from '../components/Skeleton.jsx';
 
 export default function BookDetail() {
   const { id } = useParams();
@@ -57,11 +58,10 @@ export default function BookDetail() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center text-stone-500 dark:text-slate-400">
+      <>
         <Seo title="Loading book…" noIndex />
-        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-        Loading…
-      </div>
+        <BookDetailSkeleton />
+      </>
     );
   }
 
